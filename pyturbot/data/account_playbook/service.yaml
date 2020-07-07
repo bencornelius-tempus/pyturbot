@@ -1,0 +1,92 @@
+create:
+  api: /api/{apiVersion}/accounts/{accountId}/playbooks
+  method: POST
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+    - name: accountId
+      required: True
+      type: int
+  permissions: Turbot/Admin
+  request_body:
+    - name: Description
+      required: False
+      type: String
+    - name: playbookId
+      required: True
+      type: String
+    - name: connection
+      required: True
+      type: json
+    - name: mode
+      required: True
+      type: String
+  responses:
+    - 201
+    - 404
+delete:
+  api: /api/{apiVersion}/accounts/{accountId}/playbooks/{playbookId}
+  method: DELETE
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+    - name: accountId
+      required: True
+      type: int
+    - name: playbookId
+      required: True
+      type: int
+  permissions: Turbot/Admin
+  responses:
+    - 204
+    - 404
+get:
+  api: /api/{apiVersion}/accounts/{accountId}/playbooks/{playbookId}
+  method: GET
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+    - name: accountId
+      required: True
+      type: int
+    - name: playbookId
+      required: True
+      type: int
+  permissions: Turbot/Metadata
+  responses:
+    - 204
+    - 404
+list:
+  api: /api/{apiVersion}/accounts/{accountId}/playbooks
+  method: GET
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+    - name: accountId
+      required: True
+      type: int
+  permissions: Turbot/Metadata
+  responses:
+    - 200
+    - 404
+update:
+  api: /api/{apiVersion}/accounts/{accountId}/playbooks/{playbookId}
+  method: PATCH
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+    - name: accountId
+      required: True
+      type: int
+    - name: playbookId
+      required: True
+      type: int
+  permissions: Turbot/Admin
+  responses:
+    - 200
+    - 404

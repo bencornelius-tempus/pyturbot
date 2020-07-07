@@ -1,0 +1,4 @@
+.vscode/*
+__pycache__/*
+pyturbot.egg-info/*
+.DS_Store

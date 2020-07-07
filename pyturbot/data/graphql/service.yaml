@@ -1,0 +1,18 @@
+get:
+  api: /api/{apiVersion}/graphql
+  method: POST
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+  request_body:
+    - name: query
+      required: True
+      type: String
+    - name: variables
+      required: False
+      type: String
+  permissions: Turbot/Owner
+  responses:
+    - 200
+    - 400

@@ -1,0 +1,25 @@
+get:
+  api:  /api/{apiVersion}/directories/{directoryUrn}
+  method: POST
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+    - name: directoryUrn
+      required: True
+      type: int
+  permissions: Turbot/Owner
+  responses:
+    - 200
+    - 404
+list:
+  api: /api/{apiVersion}/directories
+  method: GET
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+  permissions: Turbot/Owner
+  responses:
+    - 200
+    - 404

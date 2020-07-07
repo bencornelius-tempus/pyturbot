@@ -1,0 +1,14 @@
+get:
+  api: /api/{apiVersion}/directories/{directoryUrn}/saml
+  method: GET
+  path_params:
+    - name: apiVersion
+      required: True
+      type: String
+    - name: directoryUrn
+      required: True
+      type: int
+  permissions: Turbot/Owner
+  responses:
+    - 200
+    - 404
