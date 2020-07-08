@@ -6,6 +6,7 @@ import os
 import logging
 import yaml
 import requests
+import re
 from requests.auth import HTTPBasicAuth 
 
 # Configure default logger to do nothing
@@ -45,29 +46,37 @@ class Session(object):
     
     def api(self, action=None, **kwargs):
         """
+        Returns a list of request objects that queried the API
         """
+        api_response = []
         config = self.service[action]
         self.check_path_parameters(config, **kwargs)
         url = self.get_url(config, **kwargs)
+        request_body = self.get_request_body(config, kwargs)
+        print(f"Request body: {request_body}")
         response = requests.request(
             config['method'],
             url,
             auth = HTTPBasicAuth(self.access_key, self.secret_key),
             verify=True,
-            json=self.get_request_body(config, **kwargs),
+            json=request_body,
             headers= {
                 'content-type': "application/json",
                 'cache-control': "no-cache"
             }
         )
         if response.status_code not in config['responses']:
-            print(response.status_code)
             log.error("Unexpected HTTP response code", exc_info=True)
             raise Exception ("Unexpected HTTP response code")
-        return response
+        api_response.append(response)
+        paging = self.paging_recursion(response, action, config, **kwargs)
+        if paging:
+            api_response.extend(paging)
+        return api_response
 
     def get_url(self, config, **kwargs):
         """
+        Gets the API
         """
         api = config["api"].format(**kwargs)
         return f"https://{self.host}{api}"
@@ -82,7 +91,7 @@ class Session(object):
         if len(missing_parameters) > 0:
             raise Exception (f"Required path parameters {missing_parameters} are missing")
     
-    def get_request_body(self, config, **kwargs):
+    def get_request_body(self, config, kwargs):
         """
         """
         if 'request_body' not in config:
@@ -95,3 +104,28 @@ class Session(object):
             if arg['name'] in kwargs:
                 request_body[arg['name']] = kwargs[arg['name']]
         return request_body
+    
+    def get_paging(self, config, kwargs):
+        """
+        """
+        if "query" not in kwargs and "paging" not in kwargs:
+            return
+        if not re.findall(r"paging", kwargs["query"]):
+            raise Exception (f"Paging set but not in query")
+        if kwargs["next"]:
+            pattern = r"paging:\s?([\"'][-A-Za-z0-9+\/]*={0,3}[\"'])"
+            return re.sub(pattern, "paging: \"{next}\"".format(next=kwargs["next"]), kwargs["query"])
+
+    def paging_recursion(self, response, action, config, **kwargs):
+        if 'paging' in kwargs:
+            if kwargs['paging'] == True:
+                json_text = json.loads(response.text)
+                try:
+                    next_page = json_text["data"]["notifications"]["paging"]["next"]
+                    if next_page != None:
+                        kwargs["next"] = next_page
+                        kwargs["query"] = self.get_paging(config, kwargs)
+                        return self.api(action, **kwargs)
+                except Exception as e:
+                    log.error(f"Paging appears to be missing from GraphQL response")
+                    log.error(e, exc_info=True)
